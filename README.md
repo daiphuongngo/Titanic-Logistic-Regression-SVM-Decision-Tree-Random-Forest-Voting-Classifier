@@ -109,8 +109,11 @@ I will not print the Cabin's unique values since it has too many values.
  
 #### **Survived vs Sex**
  
- 
+ ![Survived vs Sex](https://user-images.githubusercontent.com/70437668/141410888-888864e3-28d3-412f-a2ed-7ce3417d74fe.jpg)
+
 #### **Survived vs Pclass**
+
+![Survived vs Pclass](https://user-images.githubusercontent.com/70437668/141410903-c0a31c03-f1c6-4313-abdc-9c61635bd489.jpg)
 
 
 ##### Scatter Plot
@@ -120,8 +123,12 @@ I will not print the Cabin's unique values since it has too many values.
 
 #### **Survived vs Pclass vs Fare vs Age**
 
+![Survived vs Pclass vs Fare vs Age](https://user-images.githubusercontent.com/70437668/141410914-e5fe72d8-0f80-425b-9e75-cc88b6739c78.jpg)
+
 
 #### **Survived vs Pclass vs SibSp vs Parch**
+
+![Survived vs Pclass vs SibSp vs Parch](https://user-images.githubusercontent.com/70437668/141410926-dbe4bf72-1d24-4a42-a060-06878f2ba7a8.jpg)
 
 ### Box plot
 
@@ -139,9 +146,11 @@ This plot describes numerical/continuous values by their quartiles.
 
 ### Histogram
 
+![Histogram](https://user-images.githubusercontent.com/70437668/141410934-7f898ef0-10da-4b11-8dfe-de04ed65bf5a.jpg)
 
 ### Correlation Heatmap
 
+![Correlation Matrix](https://user-images.githubusercontent.com/70437668/141410947-679018ea-c750-4457-9afe-0c08bbf2fe85.jpg)
 
 ## Data Preprocessing
 
@@ -179,9 +188,35 @@ Apply One Hot Encoding for all categorical columns
 
 ### Get the label y
 
+```
+y = df_train.Survived
+df_train = df_train.drop(columns=['Survived'])
+```
+
 ### **Train / Validation Split**
+```
+from sklearn.model_selection import train_test_split
+X_train, X_val, y_train, y_val = train_test_split(df_train, y, test_size=0.3, stratify=y, shuffle=True, random_state=1612)   
+print('Shape of X train', X_train.shape)
+print('Shape of y train', y_train.shape)
+print('Shape of X val', X_val.shape)
+print('Shape of y val', y_val.shape)
+```
 
 ### **Feature Scaling (MinMaxScaler)**
+```
+from sklearn.preprocessing import MinMaxScaler
+
+scaler = MinMaxScaler()
+# Before using MinMaxScaler, get that column and reshape it, then transform it
+fares_train = np.array(X_train['Fare']).reshape(-1, 1)
+fares_val = np.array(X_val['Fare']).reshape(-1, 1)
+fares_test = np.array(df_test['Fare']).reshape(-1, 1)
+
+X_train['Fare'] = scaler.fit_transform(fares_train)
+X_val['Fare']= scaler.transform(fares_val)
+df_test['Fare'] = scaler.transform(fares_test)
+```
 
 ## 2D Visualization
 
@@ -189,9 +224,45 @@ Apply One Hot Encoding for all categorical columns
 
 Feasible but not the best method
 
+```
+from sklearn.decomposition import PCA
+import numpy as np
+import matplotlib.pyplot as plt
+
+pca = PCA(n_components = 2) # 2D so number of components = 2
+df_pca = pca.fit_transform(X_train)
+```
+
+```
+plt.figure(figsize =(8, 8))
+sns.scatterplot(df_pca[:,0], df_pca[:,1], hue=y_train, legend='full') # seaborn is more modern than matplotlib
+```
+![PCA](https://user-images.githubusercontent.com/70437668/141410964-8f089c10-7db5-4a2c-a5f7-354ffbaa2823.jpg)
+
+```
+print(pca.explained_variance_ratio_)
+# Retained data is now only 0.56 + 0.16 = 72%
+```
+
+```
+[0.56122445 0.16031097]
+```
+
 ### T-SNE decreases dimension to 2D - Method 2
 
 Visualize the embedded Z vector
+
+```
+from sklearn.manifold import TSNE
+
+tsne = TSNE()
+df_tsne = tsne.fit_transform(X_train)
+
+plt.figure(figsize =(8, 8))
+sns.scatterplot(df_tsne[:,0], df_tsne[:,1], hue=y_train, legend='full')
+```
+
+![TSNE](https://user-images.githubusercontent.com/70437668/141410979-17a69040-027b-4133-96ee-0d19c8231803.jpg)
 
 ## Ensemble Model
 
@@ -199,11 +270,106 @@ A combination of different models
 
 ### Logistic Regression
 
+```
+from sklearn.linear_model import LogisticRegression
+logreg = LogisticRegression()
+logreg.fit(X_train, y_train) # fit on both X train, y train
+```
+
+```
+print('Accuracy on Train Set: ', logreg.score(X_train, y_train))
+print('Accuracy on Validation Set: ', logreg.score(X_val, y_val))
+```
+
+```
+Accuracy on Train Set:  0.8443017656500803
+Accuracy on Validation Set:  0.8059701492537313
+```
+
+**Both accuracy values are not high. They can be correct on alive people, and incorrect on dead people. So I will draw Confusion Matrix to see the accuracy.**
+
 ### Support Vector Machine
+
+```
+C_values = [0.01, 0.1, 1] # 0.01 tới 10
+gamma_values = [0.01, 0.1, 1]
+kernel_values = ['linear', 'poly', 'rbf']
+
+param_grid = {
+    'kernel': kernel_values,
+    'C': C_values,
+    'gamma': gamma_values
+}
+```
+
+```
+from sklearn.svm import SVC
+from sklearn.model_selection import GridSearchCV
+
+model = SVC(random_state=1612)
+grid = GridSearchCV(model, param_grid, cv=2)
+grid.fit(X_train, y_train)
+
+svc = grid.best_estimator_
+```
+
+```
+print('Accuracy on Train Set: ', svc.score(X_train, y_train))
+print('Accuracy on Validation Set: ', svc.score(X_val, y_val))
+```
+
+```
+Accuracy on Train Set:  0.8507223113964687
+Accuracy on Validation Set:  0.7910447761194029
+```
 
 ### Decision Tree
 
+```
+params = {
+    'criterion': ['entropy','gini'],
+    'max_depth': [3,5,7],
+    'min_samples_split': np.linspace(0.1, 1.0, 10), 
+    'max_features':  ['auto', 'log2']
+}
+from sklearn.tree import DecisionTreeClassifier
+
+decision_tree = GridSearchCV(DecisionTreeClassifier(random_state=1612), params, cv=2, n_jobs=1)
+decision_tree.fit(X_train, y_train)
+```
+
+```
+print('Accuracy on Train Set: ', decision_tree.score(X_train, y_train))
+print('Accuracy on Validation Set: ', decision_tree.score(X_val, y_val))
+```
+
+```
+Accuracy on Train Set:  0.826645264847512
+Accuracy on Validation Set:  0.7761194029850746
+```
+
 ### Random Forest
+```
+param_grid_random={'criterion': ['gini', 'entropy'],
+            'max_depth': [3, 5, 7],
+            'max_features': ['auto', 'log2'],
+            'n_estimators': [100, 300, 500]}
+ 
+from sklearn.ensemble import RandomForestClassifier 
+
+random_forest = GridSearchCV(RandomForestClassifier(random_state=1612), params, cv=2, n_jobs=1)
+random_forest.fit(X_train, y_train)
+```
+
+```
+print('Accuracy on Train Set: ', random_forest.score(X_train, y_train))
+print('Accuracy on Validation Set: ', random_forest.score(X_val, y_val))
+```
+
+```
+Accuracy on Train Set:  0.8491171749598716
+Accuracy on Validation Set:  0.7985074626865671
+```
 
 ### Voting Classifier
 
@@ -230,6 +396,11 @@ print('Accuracy on Train Set: ', ensemble.score(X_train, y_train))
 print('Accuracy on Validation Set: ', ensemble.score(X_val, y_val))
 ```
 
+```
+Accuracy on Train Set:  0.8491171749598716
+Accuracy on Validation Set:  0.7873134328358209
+```
+
 ### **Confusion Matrix**
 ```
 # 1. Import confusion matrix from sklearn
@@ -243,3 +414,4 @@ sns.heatmap(cm, annot=True, fmt='.1f')
 plt.title('Confusion Matrix')
 ```
 
+![Confusion Matrix](https://user-images.githubusercontent.com/70437668/141410988-a08dd655-f8df-4a1f-bde8-ccafed7d687e.jpg)
