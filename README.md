@@ -150,7 +150,7 @@ This plot describes numerical/continuous values by their quartiles.
 
 ### Correlation Heatmap
 
-![Correlation Matrix](https://user-images.githubusercontent.com/70437668/141410947-679018ea-c750-4457-9afe-0c08bbf2fe85.jpg)
+<img src="https://user-images.githubusercontent.com/70437668/141410947-679018ea-c750-4457-9afe-0c08bbf2fe85.jpg" width=50% height=50%>
 
 ## Data Preprocessing
 
@@ -237,7 +237,7 @@ df_pca = pca.fit_transform(X_train)
 plt.figure(figsize =(8, 8))
 sns.scatterplot(df_pca[:,0], df_pca[:,1], hue=y_train, legend='full') # seaborn is more modern than matplotlib
 ```
-![PCA](https://user-images.githubusercontent.com/70437668/141410964-8f089c10-7db5-4a2c-a5f7-354ffbaa2823.jpg)
+<img src="https://user-images.githubusercontent.com/70437668/141410964-8f089c10-7db5-4a2c-a5f7-354ffbaa2823.jpg" width=50% height=50%>
 
 ```
 print(pca.explained_variance_ratio_)
@@ -262,7 +262,7 @@ plt.figure(figsize =(8, 8))
 sns.scatterplot(df_tsne[:,0], df_tsne[:,1], hue=y_train, legend='full')
 ```
 
-![TSNE](https://user-images.githubusercontent.com/70437668/141410979-17a69040-027b-4133-96ee-0d19c8231803.jpg)
+<img src="https://user-images.githubusercontent.com/70437668/141410979-17a69040-027b-4133-96ee-0d19c8231803.jpg" width=50% height=50%>
 
 ## Ensemble Model
 
@@ -414,4 +414,4 @@ sns.heatmap(cm, annot=True, fmt='.1f')
 plt.title('Confusion Matrix')
 ```
 
-![Confusion Matrix](https://user-images.githubusercontent.com/70437668/141410988-a08dd655-f8df-4a1f-bde8-ccafed7d687e.jpg)
+<img src="https://user-images.githubusercontent.com/70437668/141410988-a08dd655-f8df-4a1f-bde8-ccafed7d687e.jpg" width=50% height=50%>
